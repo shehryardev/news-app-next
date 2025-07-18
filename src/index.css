@@ -2,95 +2,158 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* DevNews Design System - Daily.dev inspired dark theme */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    /* Light mode (fallback) */
+    --background: 210 20% 98%;
+    --foreground: 224 30% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 224 30% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 224 30% 8%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 224 30% 8%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 224 30% 8%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 262 83% 58%;
+    --radius: 0.75rem;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Custom colors for news app */
+    --app-background: 224 30% 8%;
+    --app-surface: 224 25% 12%;
+    --app-border: 224 20% 18%;
+    --app-accent: 262 83% 58%;
+    --app-accent-muted: 262 50% 25%;
+    --app-success: 142 71% 45%;
+    --app-warning: 38 92% 50%;
+    --app-text-primary: 0 0% 98%;
+    --app-text-secondary: 215 16% 65%;
+    --app-text-muted: 215 16% 47%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(252 83% 68%));
+    --gradient-surface: linear-gradient(145deg, hsl(224 25% 12%), hsl(224 20% 10%));
+    --gradient-accent: linear-gradient(90deg, hsl(262 83% 58%), hsl(282 83% 58%));
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(224 30% 8% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(224 30% 8% / 0.1), 0 2px 4px -1px hsl(224 30% 8% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(224 30% 8% / 0.1), 0 4px 6px -2px hsl(224 30% 8% / 0.05);
+    --shadow-glow: 0 0 20px hsl(262 83% 58% / 0.15);
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Sidebar */
+    --sidebar-background: 224 25% 12%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 224 20% 18%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 224 20% 18%;
+    --sidebar-ring: 262 83% 58%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Dark mode is our primary theme */
+    --background: 224 30% 8%;
+    --foreground: 0 0% 98%;
+    --card: 224 25% 12%;
+    --card-foreground: 0 0% 98%;
+    --popover: 224 25% 12%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 224 20% 18%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 224 20% 18%;
+    --muted-foreground: 215 16% 65%;
+    --accent: 224 20% 18%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 224 20% 18%;
+    --input: 224 20% 18%;
+    --ring: 262 83% 58%;
+  }
+}
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+@layer base {
+  * {
+    @apply border-border;
+  }
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background: hsl(var(--app-background));
+    color: hsl(var(--app-text-primary));
+  }
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+  /* Custom scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--app-background));
+  }
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--app-border));
+    border-radius: 3px;
+  }
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--app-accent-muted));
+  }
+}
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+@layer components {
+  /* News card hover effect */
+  .news-card {
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-lg;
+    background: hsl(var(--app-surface));
+    border: 1px solid hsl(var(--app-border));
+  }
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  .news-card:hover {
+    box-shadow: var(--shadow-glow);
+    border-color: hsl(var(--app-accent) / 0.3);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Button variants for the news app */
+  .btn-like {
+    @apply transition-all duration-200 hover:scale-105 active:scale-95;
+  }
+
+  .btn-like.liked {
+    @apply text-red-500;
+  }
+
+  /* Loading skeleton animation */
+  .skeleton-loading {
+    @apply animate-pulse bg-gradient-to-r from-muted via-muted/50 to-muted;
   }
 }
 

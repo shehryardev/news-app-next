@@ -61,6 +61,19 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom app colors
+				app: {
+					background: 'hsl(var(--app-background))',
+					surface: 'hsl(var(--app-surface))',
+					border: 'hsl(var(--app-border))',
+					accent: 'hsl(var(--app-accent))',
+					'accent-muted': 'hsl(var(--app-accent-muted))',
+					success: 'hsl(var(--app-success))',
+					warning: 'hsl(var(--app-warning))',
+					'text-primary': 'hsl(var(--app-text-primary))',
+					'text-secondary': 'hsl(var(--app-text-secondary))',
+					'text-muted': 'hsl(var(--app-text-muted))'
 				}
 			},
 			borderRadius: {
