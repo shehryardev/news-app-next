@@ -3,119 +3,78 @@ import { NewsCard } from "./NewsCard";
 import { NewsCardSkeleton } from "./NewsCardSkeleton";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
-
-// Mock data for demonstration
-const mockNews = [
-  {
-    id: "1",
-    title: "React 19 Released: New Features and Breaking Changes You Need to Know",
-    description: "The React team has officially released React 19 with major improvements to server components, concurrent features, and developer experience. This comprehensive guide covers all the new features, breaking changes, and migration strategies.",
-    image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=200&fit=crop",
-    source: "React Blog",
-    publishedAt: "2024-01-15T10:30:00Z",
-    url: "https://react.dev",
-    tags: ["React", "JavaScript", "Frontend"],
-    likesCount: 127,
-    isLiked: false,
-    isBookmarked: false,
-  },
-  {
-    id: "2",
-    title: "The Future of Web Development: WebAssembly and Beyond",
-    description: "Exploring how WebAssembly is revolutionizing web performance and enabling new possibilities for web applications. From gaming to data processing, WASM is changing what's possible in the browser.",
-    image: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=400&h=200&fit=crop",
-    source: "TechCrunch",
-    publishedAt: "2024-01-15T08:15:00Z",
-    url: "https://techcrunch.com",
-    tags: ["WebAssembly", "Performance", "Web"],
-    likesCount: 89,
-    isLiked: true,
-    isBookmarked: false,
-  },
-  {
-    id: "3",
-    title: "TypeScript 5.3: New Features and Performance Improvements",
-    description: "The latest TypeScript release brings significant performance improvements and new language features that make development more efficient and type-safe.",
-    image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&h=200&fit=crop",
-    source: "TypeScript Blog",
-    publishedAt: "2024-01-14T16:45:00Z",
-    url: "https://typescriptlang.org",
-    tags: ["TypeScript", "JavaScript", "Development"],
-    likesCount: 203,
-    isLiked: false,
-    isBookmarked: true,
-  },
-  {
-    id: "4",
-    title: "Building Scalable Microservices with Node.js and Docker",
-    description: "A comprehensive guide to designing and implementing microservices architecture using Node.js and Docker. Learn best practices for service communication, data management, and deployment.",
-    source: "Dev.to",
-    publishedAt: "2024-01-14T14:20:00Z",
-    url: "https://dev.to",
-    tags: ["Node.js", "Microservices", "Docker"],
-    likesCount: 156,
-    isLiked: false,
-    isBookmarked: false,
-  },
-  {
-    id: "5",
-    title: "CSS Grid vs Flexbox: When to Use Each Layout Method",
-    description: "Understanding the differences between CSS Grid and Flexbox, and knowing when to use each layout method for optimal responsive design results.",
-    image: "https://images.unsplash.com/photo-1523726491678-bf852e717f6a?w=400&h=200&fit=crop",
-    source: "CSS-Tricks",
-    publishedAt: "2024-01-14T11:30:00Z",
-    url: "https://css-tricks.com",
-    tags: ["CSS", "Layout", "Design"],
-    likesCount: 74,
-    isLiked: false,
-    isBookmarked: false,
-  },
-  {
-    id: "6",
-    title: "AI-Powered Code Review: The Next Evolution in Development",
-    description: "How artificial intelligence is transforming code review processes, catching bugs earlier, and improving code quality across development teams.",
-    image: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=200&fit=crop",
-    source: "GitHub Blog",
-    publishedAt: "2024-01-13T19:15:00Z",
-    url: "https://github.blog",
-    tags: ["AI", "Code Review", "Productivity"],
-    likesCount: 312,
-    isLiked: true,
-    isBookmarked: true,
-  },
-];
+import { apiService, type Article } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface NewsFeedProps {
   className?: string;
+  trending?: boolean;
 }
 
-export function NewsFeed({ className }: NewsFeedProps) {
-  const [news, setNews] = useState(mockNews);
+export function NewsFeed({ className, trending = false }: NewsFeedProps) {
+  const [news, setNews] = useState<Article[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [likedArticles, setLikedArticles] = useState<Set<string>>(new Set());
+  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
 
-  const handleLike = (id: string) => {
-    setNews(prev => prev.map(item => 
-      item.id === id 
-        ? { 
-            ...item, 
-            isLiked: !item.isLiked,
-            likesCount: item.isLiked ? item.likesCount - 1 : item.likesCount + 1
-          }
-        : item
-    ));
+  const handleLike = async (id: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to like articles.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const isLiked = likedArticles.has(id);
+      
+      if (isLiked) {
+        await apiService.unlikeArticle(id);
+        setLikedArticles(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(id);
+          return newSet;
+        });
+      } else {
+        await apiService.likeArticle(id);
+        setLikedArticles(prev => new Set(prev).add(id));
+      }
+
+      // Update local state
+      setNews(prev => prev.map(item => 
+        item._id === id 
+          ? { 
+              ...item, 
+              like_count: isLiked 
+                ? (item.like_count || 0) - 1 
+                : (item.like_count || 0) + 1
+            }
+          : item
+      ));
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update like status.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleBookmark = (id: string) => {
-    setNews(prev => prev.map(item => 
-      item.id === id 
-        ? { ...item, isBookmarked: !item.isBookmarked }
-        : item
-    ));
+    // TODO: Implement bookmark functionality when API is available
+    toast({
+      title: "Coming soon",
+      description: "Bookmark functionality will be available soon.",
+    });
   };
 
   const handleShare = (id: string) => {
-    const newsItem = news.find(item => item.id === id);
+    const newsItem = news.find(item => item._id === id);
     if (newsItem) {
       navigator.share?.({
         title: newsItem.title,
@@ -123,76 +82,150 @@ export function NewsFeed({ className }: NewsFeedProps) {
         url: newsItem.url,
       }).catch(() => {
         // Fallback to clipboard
-        navigator.clipboard.writeText(newsItem.url);
+        navigator.clipboard.writeText(newsItem.url || '');
+        toast({
+          title: "Link copied",
+          description: "Article link copied to clipboard.",
+        });
       });
+    }
+  };
+
+  const fetchNews = async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const articles = await apiService.getRecommendations(trending);
+      setNews(articles);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch articles.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchLikes = async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const likes = await apiService.getLikes();
+      setLikedArticles(new Set(likes.map(like => like.news_id)));
+    } catch (error) {
+      console.error('Failed to fetch likes:', error);
     }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await fetchNews();
     setRefreshing(false);
   };
 
   useEffect(() => {
-    // Simulate initial loading
-    setLoading(true);
-    setTimeout(() => setLoading(false), 1500);
-  }, []);
+    if (isAuthenticated) {
+      setLoading(true);
+      Promise.all([fetchNews(), fetchLikes()]).finally(() => {
+        setLoading(false);
+      });
+    } else {
+      setNews([]);
+      setLikedArticles(new Set());
+    }
+  }, [isAuthenticated, trending]);
 
   return (
     <div className={className}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-app-text-primary">My Feed</h1>
-          <p className="text-app-text-secondary">Stay updated with the latest in tech</p>
+          <h1 className="text-2xl font-bold text-app-text-primary">
+            {trending ? 'Trending' : 'My Feed'}
+          </h1>
+          <p className="text-app-text-secondary">
+            {trending 
+              ? 'Popular articles from the community' 
+              : 'Stay updated with the latest in tech'
+            }
+          </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="border-app-border text-app-text-secondary hover:text-app-text-primary hover:bg-app-accent-muted"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      </div>
-
-      {/* News Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {loading ? (
-          // Loading skeletons
-          Array.from({ length: 6 }).map((_, i) => (
-            <NewsCardSkeleton key={i} />
-          ))
-        ) : (
-          // News items
-          news.map((item) => (
-            <NewsCard
-              key={item.id}
-              news={item}
-              onLike={handleLike}
-              onBookmark={handleBookmark}
-              onShare={handleShare}
-            />
-          ))
+        {isAuthenticated && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="border-app-border text-app-text-secondary hover:text-app-text-primary hover:bg-app-accent-muted"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         )}
       </div>
 
-      {/* Load More */}
-      {!loading && (
-        <div className="text-center mt-12">
-          <Button
-            variant="outline"
-            className="border-app-border text-app-text-secondary hover:text-app-text-primary hover:bg-app-accent-muted"
-          >
-            Load More Articles
-          </Button>
+      {!isAuthenticated ? (
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold text-app-text-primary mb-2">
+            Sign in to see your personalized feed
+          </h2>
+          <p className="text-app-text-secondary">
+            Create an account to discover articles tailored to your interests
+          </p>
         </div>
+      ) : (
+        <>
+          {/* News Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {loading ? (
+              // Loading skeletons
+              Array.from({ length: 6 }).map((_, i) => (
+                <NewsCardSkeleton key={i} />
+              ))
+            ) : news.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-app-text-secondary">No articles found</p>
+              </div>
+            ) : (
+              // News items
+              news.map((item) => (
+                <NewsCard
+                  key={item._id}
+                  news={{
+                    id: item._id,
+                    title: item.title,
+                    description: item.description || '',
+                    image: item.image,
+                    source: item.source || 'Unknown',
+                    publishedAt: item.publishedAt || new Date().toISOString(),
+                    url: item.url || '',
+                    tags: item.tags || [],
+                    likesCount: item.like_count || 0,
+                    isLiked: likedArticles.has(item._id),
+                    isBookmarked: false, // TODO: Implement when API is available
+                  }}
+                  onLike={handleLike}
+                  onBookmark={handleBookmark}
+                  onShare={handleShare}
+                />
+              ))
+            )}
+          </div>
+
+          {/* Load More */}
+          {!loading && news.length > 0 && (
+            <div className="text-center mt-12">
+              <Button
+                variant="outline"
+                className="border-app-border text-app-text-secondary hover:text-app-text-primary hover:bg-app-accent-muted"
+              >
+                Load More Articles
+              </Button>
+            </div>
+          )}
+        </>
       )}
+
     </div>
   );
 }

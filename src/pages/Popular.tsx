@@ -9,7 +9,7 @@ const Popular = () => {
           <h1 className="text-3xl font-bold text-app-text-primary mb-4">Popular Today</h1>
           <p className="text-app-text-secondary">Trending articles from the developer community</p>
         </div>
-        <NewsFeed />
+        <NewsFeed trending />
       </div>
     </AppLayout>
   );

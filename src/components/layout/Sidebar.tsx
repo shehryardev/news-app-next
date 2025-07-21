@@ -13,9 +13,11 @@ const navigationItems = [
 interface SidebarProps {
   collapsed: boolean;
   onToggle: (collapsed: boolean) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed, onToggle, isOpen, onClose }: SidebarProps) {
   const location = useLocation();
 
   const isActive = (path: string) => {
