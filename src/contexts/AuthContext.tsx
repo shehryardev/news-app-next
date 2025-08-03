@@ -64,6 +64,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
       return true;
     } catch (error) {
+      console.log(error);
       toast({
         title: "Login failed",
         description: "Please check your credentials and try again.",
