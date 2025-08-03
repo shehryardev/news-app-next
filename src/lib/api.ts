@@ -1,5 +1,9 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+// Debug logging
+console.log("API_BASE_URL:", API_BASE_URL);
+console.log("import.meta.env.VITE_API_URL:", import.meta.env.VITE_API_URL);
+
 interface LoginRequest {
   username: string;
   password: string;
@@ -52,7 +56,16 @@ interface Article {
 class ApiService {
   private getAuthHeaders() {
     const token = localStorage.getItem("access_token");
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      "ngrok-skip-browser-warning": "true",
+    };
+  }
+
+  private getHeaders() {
+    return {
+      "ngrok-skip-browser-warning": "true",
+    };
   }
 
   async register(userData: RegisterRequest): Promise<UserResponse> {
@@ -60,6 +73,7 @@ class ApiService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...this.getHeaders(),
       },
       body: JSON.stringify(userData),
     });
@@ -76,13 +90,36 @@ class ApiService {
     formData.append("username", credentials.username);
     formData.append("password", credentials.password);
 
+    console.log("Making login request to:", `${API_BASE_URL}/token`);
+
     const response = await fetch(`${API_BASE_URL}/token`, {
       method: "POST",
+      headers: this.getHeaders(),
       body: formData,
     });
 
+    console.log("Login response status:", response.status);
+    console.log("Login response headers:", response.headers);
+
     if (!response.ok) {
-      throw new Error("Login failed");
+      // Read the response text to see what we actually got
+      const errorText = await response.text();
+      console.log("Login error response:", errorText);
+      throw new Error(`Login failed: ${response.status} - ${errorText}`);
+    }
+
+    // Check content type before parsing JSON
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const responseText = await response.text();
+      console.log("Unexpected response type:", contentType);
+      console.log("Response body:", responseText);
+      throw new Error(
+        `Expected JSON but got ${contentType}: ${responseText.substring(
+          0,
+          200
+        )}`
+      );
     }
 
     const tokenData = await response.json();
@@ -95,6 +132,7 @@ class ApiService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...this.getHeaders(),
       },
       body: JSON.stringify({ token }),
     });
@@ -109,12 +147,36 @@ class ApiService {
   }
 
   async getCurrentUser(): Promise<UserResponse> {
+    console.log("Making getCurrentUser request to:", `${API_BASE_URL}/auth/me`);
+    console.log("Auth headers:", this.getAuthHeaders());
+
     const response = await fetch(`${API_BASE_URL}/auth/me`, {
       headers: this.getAuthHeaders(),
     });
 
+    console.log("getCurrentUser response status:", response.status);
+    console.log("getCurrentUser response headers:", response.headers);
+
     if (!response.ok) {
-      throw new Error("Failed to fetch current user");
+      const errorText = await response.text();
+      console.log("getCurrentUser error response:", errorText);
+      throw new Error(
+        `Failed to fetch current user: ${response.status} - ${errorText}`
+      );
+    }
+
+    // Check content type before parsing JSON
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const responseText = await response.text();
+      console.log("Unexpected response type in getCurrentUser:", contentType);
+      console.log("Response body:", responseText);
+      throw new Error(
+        `Expected JSON but got ${contentType}: ${responseText.substring(
+          0,
+          200
+        )}`
+      );
     }
 
     return response.json();
