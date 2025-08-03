@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000'; // Update with your backend URL
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 interface LoginRequest {
   username: string;
@@ -10,9 +10,16 @@ interface RegisterRequest {
   password: string;
 }
 
+interface GoogleAuthRequest {
+  token: string;
+}
+
 interface UserResponse {
   _id: string;
   email: string;
+  name?: string;
+  picture?: string;
+  auth_provider?: string;
 }
 
 interface TokenResponse {
@@ -44,21 +51,21 @@ interface Article {
 
 class ApiService {
   private getAuthHeaders() {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 
   async register(userData: RegisterRequest): Promise<UserResponse> {
     const response = await fetch(`${API_BASE_URL}/register`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(userData),
     });
 
     if (!response.ok) {
-      throw new Error('Registration failed');
+      throw new Error("Registration failed");
     }
 
     return response.json();
@@ -66,39 +73,69 @@ class ApiService {
 
   async login(credentials: LoginRequest): Promise<TokenResponse> {
     const formData = new FormData();
-    formData.append('username', credentials.username);
-    formData.append('password', credentials.password);
+    formData.append("username", credentials.username);
+    formData.append("password", credentials.password);
 
     const response = await fetch(`${API_BASE_URL}/token`, {
-      method: 'POST',
+      method: "POST",
       body: formData,
     });
 
     if (!response.ok) {
-      throw new Error('Login failed');
+      throw new Error("Login failed");
     }
 
     const tokenData = await response.json();
-    localStorage.setItem('access_token', tokenData.access_token);
+    localStorage.setItem("access_token", tokenData.access_token);
     return tokenData;
   }
 
+  async loginWithGoogle(token: string): Promise<TokenResponse> {
+    const response = await fetch(`${API_BASE_URL}/auth/google`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Google authentication failed");
+    }
+
+    const tokenData = await response.json();
+    localStorage.setItem("access_token", tokenData.access_token);
+    return tokenData;
+  }
+
+  async getCurrentUser(): Promise<UserResponse> {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch current user");
+    }
+
+    return response.json();
+  }
+
   async logout() {
-    localStorage.removeItem('access_token');
+    localStorage.removeItem("access_token");
   }
 
   async likeArticle(newsId: string): Promise<LikeResponse> {
     const response = await fetch(`${API_BASE_URL}/like`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...this.getAuthHeaders(),
       },
       body: JSON.stringify({ news_id: newsId }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to like article');
+      throw new Error("Failed to like article");
     }
 
     return response.json();
@@ -106,16 +143,16 @@ class ApiService {
 
   async unlikeArticle(newsId: string): Promise<{ detail: string }> {
     const response = await fetch(`${API_BASE_URL}/like`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...this.getAuthHeaders(),
       },
       body: JSON.stringify({ news_id: newsId }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to unlike article');
+      throw new Error("Failed to unlike article");
     }
 
     return response.json();
@@ -127,17 +164,23 @@ class ApiService {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch likes');
+      throw new Error("Failed to fetch likes");
     }
 
     return response.json();
   }
 
-  async getRecommendations(trending = false, topN = 10, days = 7): Promise<Article[]> {
+  async getRecommendations(
+    trending = false,
+    topN = 10,
+    days = 7,
+    skip = 0
+  ): Promise<Article[]> {
     const params = new URLSearchParams({
       top_n: topN.toString(),
       trending: trending.toString(),
       days: days.toString(),
+      skip: skip.toString(),
     });
 
     const response = await fetch(`${API_BASE_URL}/recommendations?${params}`, {
@@ -145,13 +188,15 @@ class ApiService {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch recommendations');
+      throw new Error("Failed to fetch recommendations");
     }
 
     return response.json();
   }
 
-  async getUserTags(topN = 10): Promise<{ tags: Array<{ tag: string; count: number }> }> {
+  async getUserTags(
+    topN = 10
+  ): Promise<{ tags: Array<{ tag: string; count: number }> }> {
     const params = new URLSearchParams({
       top_n: topN.toString(),
     });
@@ -161,13 +206,17 @@ class ApiService {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch user tags');
+      throw new Error("Failed to fetch user tags");
     }
 
     return response.json();
   }
 
-  async getArticles(search?: string, skip = 0, limit = 10): Promise<{
+  async getArticles(
+    search?: string,
+    skip = 0,
+    limit = 10
+  ): Promise<{
     results: Article[];
     skip: number;
     limit: number;
@@ -179,7 +228,7 @@ class ApiService {
     });
 
     if (search) {
-      params.append('search', search);
+      params.append("search", search);
     }
 
     const response = await fetch(`${API_BASE_URL}/articles?${params}`, {
@@ -187,14 +236,14 @@ class ApiService {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch articles');
+      throw new Error("Failed to fetch articles");
     }
 
     return response.json();
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('access_token');
+    return !!localStorage.getItem("access_token");
   }
 }
 

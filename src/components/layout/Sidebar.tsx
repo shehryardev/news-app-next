@@ -1,4 +1,12 @@
-import { Home, TrendingUp, Bookmark, Settings, User, Menu, X } from "lucide-react";
+import {
+  Home,
+  TrendingUp,
+  Bookmark,
+  Settings,
+  User,
+  Menu,
+  X,
+} from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -17,7 +25,12 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-export function Sidebar({ collapsed, onToggle, isOpen, onClose }: SidebarProps) {
+export function Sidebar({
+  collapsed,
+  onToggle,
+  isOpen,
+  onClose,
+}: SidebarProps) {
   const location = useLocation();
 
   const isActive = (path: string) => {
@@ -38,11 +51,11 @@ export function Sidebar({ collapsed, onToggle, isOpen, onClose }: SidebarProps) 
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-app-border">
         {!collapsed && (
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">DN</span>
+          <div className="hidden md:flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-app-primary to-app-accent flex items-center justify-center">
+              <span className="text-white font-bold text-sm">N</span>
             </div>
-            <span className="font-semibold text-app-text-primary">DevNews</span>
+            <span className="font-semibold text-app-text-primary">NewsHub</span>
           </div>
         )}
         <Button
@@ -92,7 +105,9 @@ export function Sidebar({ collapsed, onToggle, isOpen, onClose }: SidebarProps) 
               <p className="text-sm font-medium text-app-text-primary truncate">
                 Welcome, Developer!
               </p>
-              <p className="text-xs text-app-text-muted truncate">Sign in to customize</p>
+              <p className="text-xs text-app-text-muted truncate">
+                Sign in to customize
+              </p>
             </div>
           )}
         </div>

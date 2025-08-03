@@ -1,86 +1,87 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { Settings as SettingsIcon, Wrench } from "lucide-react";
 
 const Settings = () => {
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div>
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
           <h1 className="text-3xl font-bold text-app-text-primary">Settings</h1>
-          <p className="text-app-text-secondary mt-2">Manage your account and preferences</p>
+          <p className="text-app-text-secondary mt-2">
+            Manage your account and preferences
+          </p>
         </div>
 
-        {/* Profile Settings */}
-        <Card className="p-6 bg-app-surface border-app-border">
-          <h2 className="text-xl font-semibold text-app-text-primary mb-4">Profile</h2>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="email" className="text-app-text-secondary">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your.email@example.com"
-                className="mt-1 bg-app-background border-app-border text-app-text-primary"
-              />
+        {/* Under Construction Card */}
+        <Card className="p-12 bg-app-surface border-app-border">
+          <div className="text-center">
+            <div className="mx-auto w-24 h-24 bg-app-background rounded-full flex items-center justify-center mb-6 border border-app-border">
+              <div className="relative">
+                <SettingsIcon className="h-10 w-10 text-app-text-muted" />
+                <Wrench className="h-6 w-6 text-orange-500 absolute -bottom-1 -right-1" />
+              </div>
             </div>
-            <div>
-              <Label htmlFor="username" className="text-app-text-secondary">Username</Label>
-              <Input
-                id="username"
-                placeholder="username"
-                className="mt-1 bg-app-background border-app-border text-app-text-primary"
-              />
+
+            <h2 className="text-2xl font-bold text-app-text-primary mb-4">
+              Settings Under Construction
+            </h2>
+
+            <p className="text-app-text-secondary max-w-md mx-auto mb-6">
+              We're working hard to bring you advanced settings and preferences.
+              This feature will be available in the next release build.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center text-sm text-app-text-muted">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                <span>In Development</span>
+              </div>
+              <div className="hidden sm:block">•</div>
+              <span>Coming Soon in v2.0</span>
             </div>
           </div>
         </Card>
 
-        {/* Preferences */}
-        <Card className="p-6 bg-app-surface border-app-border">
-          <h2 className="text-xl font-semibold text-app-text-primary mb-4">Preferences</h2>
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-app-text-primary">Email Notifications</Label>
-                <p className="text-sm text-app-text-muted">Receive email updates about new articles</p>
-              </div>
-              <Switch />
-            </div>
-            
-            <Separator className="bg-app-border" />
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-app-text-primary">Weekly Digest</Label>
-                <p className="text-sm text-app-text-muted">Get a weekly summary of popular articles</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            
-            <Separator className="bg-app-border" />
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-app-text-primary">Show Read Articles</Label>
-                <p className="text-sm text-app-text-muted">Display articles you've already read</p>
-              </div>
-              <Switch />
-            </div>
-          </div>
-        </Card>
+        {/* Features Preview */}
+        <div className="mt-8 grid md:grid-cols-2 gap-6">
+          <Card className="p-6 bg-app-surface border-app-border opacity-60">
+            <h3 className="text-lg font-semibold text-app-text-primary mb-2">
+              🔔 Notification Preferences
+            </h3>
+            <p className="text-app-text-muted text-sm">
+              Customize email notifications, push alerts, and digest frequency
+            </p>
+          </Card>
 
-        {/* Actions */}
-        <div className="flex justify-end space-x-4">
-          <Button variant="outline" className="border-app-border text-app-text-secondary">
-            Cancel
-          </Button>
-          <Button className="bg-primary hover:bg-primary/90">
-            Save Changes
-          </Button>
+          <Card className="p-6 bg-app-surface border-app-border opacity-60">
+            <h3 className="text-lg font-semibold text-app-text-primary mb-2">
+              👤 Profile Management
+            </h3>
+            <p className="text-app-text-muted text-sm">
+              Update your profile, change password, and manage account settings
+            </p>
+          </Card>
+
+          <Card className="p-6 bg-app-surface border-app-border opacity-60">
+            <h3 className="text-lg font-semibold text-app-text-primary mb-2">
+              🎨 Theme Customization
+            </h3>
+            <p className="text-app-text-muted text-sm">
+              Choose between light and dark themes, customize colors and layout
+            </p>
+          </Card>
+
+          <Card className="p-6 bg-app-surface border-app-border opacity-60">
+            <h3 className="text-lg font-semibold text-app-text-primary mb-2">
+              🔐 Privacy Controls
+            </h3>
+            <p className="text-app-text-muted text-sm">
+              Manage data sharing, reading history, and recommendation
+              preferences
+            </p>
+          </Card>
         </div>
       </div>
     </AppLayout>

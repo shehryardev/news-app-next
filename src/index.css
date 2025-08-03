@@ -96,7 +96,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground;
     background: hsl(var(--app-background));
     color: hsl(var(--app-text-primary));
   }
@@ -154,15 +154,5 @@
   /* Loading skeleton animation */
   .skeleton-loading {
     @apply animate-pulse bg-gradient-to-r from-muted via-muted/50 to-muted;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
   }
 }

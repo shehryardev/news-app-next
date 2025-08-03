@@ -59,7 +59,9 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.3",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@google-cloud/local-auth": "^3.0.1",
+    "googleapis": "^137.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

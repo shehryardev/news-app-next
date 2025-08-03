@@ -1,11 +1,18 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { apiService } from '@/lib/api';
-import { useToast } from '@/hooks/use-toast';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { apiService, UserResponse } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: { email: string } | null;
+  user: UserResponse | null;
   login: (email: string, password: string) => Promise<boolean>;
+  loginWithGoogle: (token: string) => Promise<boolean>;
   register: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
@@ -19,15 +26,26 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [user, setUser] = useState<UserResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     // Check if user is authenticated on app start
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const isAuth = apiService.isAuthenticated();
-      setIsAuthenticated(isAuth);
+      if (isAuth) {
+        try {
+          const userData = await apiService.getCurrentUser();
+          setUser(userData);
+          setIsAuthenticated(true);
+        } catch (error) {
+          // Token might be invalid, clear it
+          localStorage.removeItem("access_token");
+          setIsAuthenticated(false);
+          setUser(null);
+        }
+      }
       setLoading(false);
     };
 
@@ -37,8 +55,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       await apiService.login({ username: email, password });
+      const userData = await apiService.getCurrentUser();
       setIsAuthenticated(true);
-      setUser({ email });
+      setUser(userData);
       toast({
         title: "Welcome back!",
         description: "You've been successfully logged in.",
@@ -54,7 +73,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const register = async (email: string, password: string): Promise<boolean> => {
+  const loginWithGoogle = async (token: string): Promise<boolean> => {
+    try {
+      await apiService.loginWithGoogle(token);
+      const userData = await apiService.getCurrentUser();
+      setIsAuthenticated(true);
+      setUser(userData);
+      toast({
+        title: "Welcome!",
+        description: "You've been successfully logged in with Google.",
+      });
+      return true;
+    } catch (error) {
+      toast({
+        title: "Google login failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const register = async (
+    email: string,
+    password: string
+  ): Promise<boolean> => {
     try {
       await apiService.register({ email, password });
       toast({
@@ -88,6 +131,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isAuthenticated,
         user,
         login,
+        loginWithGoogle,
         register,
         logout,
         loading,
@@ -101,7 +145,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

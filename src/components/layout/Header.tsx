@@ -1,14 +1,17 @@
-import { Menu, Bell, Search, User, LogOut } from "lucide-react";
+import { Menu, Bell, Search, User, LogOut, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { AuthModal } from "@/components/auth/AuthModal";
+import { useSearch } from "@/contexts/SearchContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
@@ -16,13 +19,40 @@ interface HeaderProps {
 }
 
 export function Header({ onToggleSidebar }: HeaderProps) {
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [localSearchQuery, setLocalSearchQuery] = useState("");
   const { isAuthenticated, user, logout } = useAuth();
+  const { searchQuery, setSearchQuery, setIsSearching, clearSearch } =
+    useSearch();
 
-  const handleAuthClick = (mode: 'login' | 'register') => {
-    setAuthMode(mode);
-    setAuthModalOpen(true);
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const trimmedQuery = localSearchQuery.trim();
+      if (trimmedQuery !== searchQuery) {
+        setSearchQuery(trimmedQuery);
+        setIsSearching(trimmedQuery.length > 0);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [localSearchQuery, searchQuery, setSearchQuery, setIsSearching]);
+
+  const handleClearSearch = () => {
+    setLocalSearchQuery("");
+    clearSearch();
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalSearchQuery(e.target.value);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const query = localSearchQuery.trim();
+      setSearchQuery(query);
+      setIsSearching(query.length > 0);
+    }
   };
 
   return (
@@ -38,13 +68,6 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          
-          <div className="hidden md:flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-app-primary to-app-accent flex items-center justify-center">
-              <span className="text-white font-bold text-sm">N</span>
-            </div>
-            <span className="font-semibold text-app-text-primary">NewsHub</span>
-          </div>
         </div>
 
         {/* Center section - Search */}
@@ -53,71 +76,79 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-app-text-secondary h-4 w-4" />
             <Input
               placeholder="Search articles..."
-              className="pl-10 bg-app-card border-app-border text-app-text-primary placeholder:text-app-text-secondary"
+              value={localSearchQuery}
+              onChange={handleSearchChange}
+              // onKeyDown={handleSearchKeyDown}
+              className="pl-10 pr-10 bg-app-surface border-app-border text-app-text-primary placeholder:text-app-text-muted focus:bg-app-card focus:border-app-accent/50 transition-all duration-200 shadow-sm hover:shadow-md focus:shadow-lg"
             />
+            {localSearchQuery && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearSearch}
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 text-app-text-secondary hover:text-app-text-primary"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
 
         {/* Right section */}
         <div className="flex items-center gap-2">
-          {isAuthenticated && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-app-text-secondary hover:text-app-text-primary"
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-app-text-secondary hover:text-app-text-primary"
+          >
+            <Bell className="h-5 w-5" />
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    src={user?.picture || undefined}
+                    alt={user?.name || user?.email}
+                  />
+                  <AvatarFallback className="bg-app-surface text-app-text-primary">
+                    {user?.name
+                      ? user.name.charAt(0).toUpperCase()
+                      : user?.email?.charAt(0).toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="bg-app-card border-app-border w-56"
+              align="end"
             >
-              <Bell className="h-5 w-5" />
-            </Button>
-          )}
-          
-          {isAuthenticated ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-app-text-secondary hover:text-app-text-primary"
-                >
-                  <User className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-app-card border-app-border">
-                <DropdownMenuItem
-                  onClick={logout}
-                  className="text-app-text-primary hover:bg-app-accent-muted"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleAuthClick('login')}
-                className="text-app-text-secondary hover:text-app-text-primary"
+              <DropdownMenuLabel className="text-app-text-primary">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {user?.name || "User"}
+                  </p>
+                  <p className="text-xs leading-none text-app-text-muted">
+                    {user?.email}
+                  </p>
+                  {user?.auth_provider === "google" && (
+                    <p className="text-xs text-app-accent">Google Account</p>
+                  )}
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-app-border" />
+              <DropdownMenuItem
+                onClick={logout}
+                className="text-app-text-primary hover:bg-app-surface"
               >
-                Sign in
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => handleAuthClick('register')}
-                className="bg-app-primary text-app-primary-foreground hover:bg-app-primary/90"
-              >
-                Sign up
-              </Button>
-            </div>
-          )}
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
-
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-        defaultMode={authMode}
-      />
     </header>
   );
 }

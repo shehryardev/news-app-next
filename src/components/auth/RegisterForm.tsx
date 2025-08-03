@@ -1,35 +1,42 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import { GoogleSignInButton } from "./GoogleSignInButton";
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
 }
 
 export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       return;
     }
 
     setLoading(true);
     const success = await register(email, password);
-    
+
     if (success) {
       onSwitchToLogin();
     }
-    
+
     setLoading(false);
   };
 
@@ -44,7 +51,9 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-app-text-primary">Email</Label>
+            <Label htmlFor="email" className="text-app-text-primary">
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
@@ -56,7 +65,9 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-app-text-primary">Password</Label>
+            <Label htmlFor="password" className="text-app-text-primary">
+              Password
+            </Label>
             <Input
               id="password"
               type="password"
@@ -68,7 +79,9 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-app-text-primary">Confirm Password</Label>
+            <Label htmlFor="confirmPassword" className="text-app-text-primary">
+              Confirm Password
+            </Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -84,12 +97,33 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
             className="w-full bg-app-primary text-app-primary-foreground hover:bg-app-primary/90"
             disabled={loading || password !== confirmPassword}
           >
-            {loading ? 'Creating account...' : 'Sign up'}
+            {loading ? "Creating account..." : "Sign up"}
           </Button>
         </form>
+
+        <div className="mt-4">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-app-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-app-card px-2 text-app-text-muted">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <GoogleSignInButton
+              onSuccess={onSwitchToLogin}
+              disabled={loading}
+            />
+          </div>
+        </div>
+
         <div className="mt-4 text-center">
           <p className="text-app-text-secondary">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <button
               type="button"
               onClick={onSwitchToLogin}
